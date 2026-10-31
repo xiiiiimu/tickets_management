@@ -1,0 +1,11 @@
+{
+  "javaHealth": "UP",
+  "target": "host.docker.internal:18082",
+  "prometheusUp": 1,
+  "verifiedAtUtc": "2026-10-28T02:32:35.3526547Z",
+  "jar": "E:\\credit_risk\\ticket-risk-platform\\target\\ticket-risk-platform-1.0.0-SNAPSHOT.jar",
+  "javaPort": 18082,
+  "shutdown": "stopped-own-probe",
+  "pid": 18384,
+  "jvmSamples": 8
+}

@@ -1,0 +1,144 @@
+name: credit-risk-dev
+services:
+  mysql:
+    image: mysql:8.0.32
+    container_name: credit-risk-dev-mysql
+    restart: "no"
+    environment:
+      MYSQL_DATABASE: ${CREDIT_RISK_MYSQL_DATABASE:?Set isolated database}
+      MYSQL_USER: ${CREDIT_RISK_MYSQL_USER:?Set isolated user}
+      MYSQL_PASSWORD: ${CREDIT_RISK_MYSQL_PASSWORD:?Set private password}
+      MYSQL_ROOT_PASSWORD: ${CREDIT_RISK_MYSQL_ROOT_PASSWORD:?Set private root password}
+      TZ: UTC
+    command: ["--default-authentication-plugin=mysql_native_password", "--character-set-server=utf8mb4", "--default-time-zone=+00:00"]
+    ports: ["127.0.0.1:${CREDIT_RISK_MYSQL_PORT}:3306"]
+    volumes:
+      - credit-risk-mysql-data:/var/lib/mysql
+      - ../../ticket-risk-platform/src/main/resources/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ../../ticket-risk-platform/src/main/resources/data.sql:/docker-entrypoint-initdb.d/02-data.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "MYSQL_PWD=$$MYSQL_PASSWORD mysql --protocol=TCP -h127.0.0.1 -u$$MYSQL_USER -D$$MYSQL_DATABASE -N -e 'SELECT COUNT(*) FROM tb_ticket_sale_assembly' >/dev/null 2>&1"]
+      interval: 5s
+      timeout: 5s
+      retries: 48
+      start_period: 25s
+    stop_grace_period: 40s
+  redis:
+    image: redis:7.2.0
+    container_name: credit-risk-dev-redis
+    restart: "no"
+    environment:
+      REDIS_PASSWORD: ${CREDIT_RISK_REDIS_PASSWORD:?Set private Redis password}
+    command:
+      - sh
+      - -ec
+      - 'exec redis-server --appendonly yes --appendfsync everysec --maxmemory-policy noeviction --requirepass "$$REDIS_PASSWORD"' 
+    ports: ["127.0.0.1:${CREDIT_RISK_REDIS_PORT}:6379"]
+    volumes: ["credit-risk-redis-data:/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "REDISCLI_AUTH=$$REDIS_PASSWORD redis-cli --no-auth-warning ping | grep -qx PONG"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    stop_grace_period: 30s
+  namesrv:
+    image: apache/rocketmq:4.9.7
+    container_name: credit-risk-dev-namesrv
+    restart: "no"
+    user: "0:0"
+    working_dir: /home/rocketmq/rocketmq-4.9.7/bin
+    command: ["sh", "/home/rocketmq/rocketmq-4.9.7/bin/mqnamesrv"]
+    environment:
+      JAVA_OPT_EXT: -Xms128m -Xmx128m -XX:MaxDirectMemorySize=64m
+    ports: ["127.0.0.1:${CREDIT_RISK_NAMESRV_PORT}:9876"]
+    volumes:
+      - ./data/rocketmq/namesrv/logs:/home/rocketmq/logs
+      - ./data/rocketmq/namesrv/store:/home/rocketmq/store
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c ': >/dev/tcp/127.0.0.1/9876'"]
+      interval: 5s
+      timeout: 3s
+      retries: 36
+      start_period: 10s
+    stop_grace_period: 30s
+  broker:
+    image: apache/rocketmq:4.9.7
+    container_name: credit-risk-dev-broker
+    restart: "no"
+    user: "0:0"
+    working_dir: /home/rocketmq/rocketmq-4.9.7/bin
+    command: ["sh", "/home/rocketmq/rocketmq-4.9.7/bin/mqbroker", "-n", "namesrv:9876", "-c", "/home/rocketmq/conf/credit-risk-broker.conf"]
+    environment:
+      NAMESRV_ADDR: namesrv:9876
+      JAVA_OPT_EXT: -Xms256m -Xmx256m -XX:MaxDirectMemorySize=128m
+    ports:
+      - "127.0.0.1:${CREDIT_RISK_BROKER_PORT}:${CREDIT_RISK_BROKER_PORT}"
+      - "127.0.0.1:${CREDIT_RISK_BROKER_VIP_PORT}:${CREDIT_RISK_BROKER_VIP_PORT}"
+    volumes:
+      - ./runtime/broker.conf:/home/rocketmq/conf/credit-risk-broker.conf:ro
+      - ./data/rocketmq/broker/logs:/home/rocketmq/logs
+      - ./data/rocketmq/broker/store:/home/rocketmq/store
+    depends_on:
+      namesrv: {condition: service_healthy}
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c ': >/dev/tcp/127.0.0.1/${CREDIT_RISK_BROKER_PORT}'"]
+      interval: 5s
+      timeout: 3s
+      retries: 48
+      start_period: 15s
+    stop_grace_period: 40s
+  prometheus:
+    image: prom/prometheus:v2.53.0
+    container_name: credit-risk-dev-prometheus
+    restart: "no"
+    user: "0:0"
+    command: ["--config.file=/etc/prometheus/prometheus.yml", "--storage.tsdb.path=/prometheus", "--storage.tsdb.retention.time=7d"]
+    ports: ["127.0.0.1:${CREDIT_RISK_PROMETHEUS_PORT}:9090"]
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./data/prometheus:/prometheus
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:9090/-/ready"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+    stop_grace_period: 30s
+  grafana:
+    image: grafana/grafana:11.2.0
+    container_name: credit-risk-dev-grafana
+    restart: "no"
+    user: "0:0"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: ${CREDIT_RISK_GRAFANA_ADMIN_PASSWORD:?Set private Grafana password}
+      GF_AUTH_ANONYMOUS_ENABLED: "false"
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_ANALYTICS_REPORTING_ENABLED: "false"
+      GF_ANALYTICS_CHECK_FOR_UPDATES: "false"
+    ports: ["127.0.0.1:${CREDIT_RISK_GRAFANA_PORT}:3000"]
+    volumes:
+      - ./data/grafana:/var/lib/grafana
+      - ../grafana/provisioning:/etc/grafana/provisioning:ro
+      - ../grafana/dashboards:/var/lib/grafana/dashboards:ro
+    depends_on:
+      prometheus: {condition: service_healthy}
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:3000/api/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 36
+    stop_grace_period: 30s
+networks:
+  default:
+    name: credit-risk-dev-network
+    labels:
+      credit-risk.environment: manual-development
+volumes:
+  credit-risk-mysql-data:
+    name: credit-risk-mysql-data
+    labels:
+      credit-risk.environment: manual-development
+  credit-risk-redis-data:
+    name: credit-risk-redis-data
+    labels:
+      credit-risk.environment: manual-development

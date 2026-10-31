@@ -1,0 +1,6 @@
+FROM eclipse-temurin:8-jre
+WORKDIR /app
+COPY target/ticket-risk-platform-1.0.0-SNAPSHOT.jar app.jar
+EXPOSE 8082
+ENV JAVA_TOOL_OPTIONS="-Xms128m -Xmx384m -XX:+UseSerialGC"
+ENTRYPOINT ["java","-jar","app.jar"]

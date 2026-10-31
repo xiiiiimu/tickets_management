@@ -1,0 +1,360 @@
+{
+  "volumes": [
+    "2dd06b968a6fe6593aeaa05a4f75071a73d164f6da238c47f3ca33667d35e67d",
+    "big-market_big-market-mysql-data",
+    "feb3255ba1f22880ba2cd585a0107f326cf0c5a2ef7c145f21bd8d8865b85dff"
+  ],
+  "networks": [
+    "big-market_default",
+    "big-market_my-network",
+    "bridge",
+    "dev-ops_my-network",
+    "host",
+    "none"
+  ],
+  "containers": [
+    {
+      "Id": "2d961651078cd7d6ef222ae4b61e28a648f3dac9e246796f25aaa6345250a6a2",
+      "Name": "/big-market-xxl-job-admin-1",
+      "Status": "exited",
+      "StartedAt": "2026-10-27T14:24:15.571384593Z",
+      "FinishedAt": "2026-10-27T16:30:22.402923847Z",
+      "RestartPolicy": "no",
+      "Mounts": [
+        {
+          "Type": "bind",
+          "Source": "E:\\big-market\\docs\\dev-ops\\environment\\data\\xxl-job",
+          "Destination": "/xxl-job",
+          "Mode": "rw",
+          "RW": true,
+          "Propagation": "rprivate"
+        },
+        {
+          "Type": "bind",
+          "Source": "E:\\big-market\\docs\\dev-ops\\environment\\data\\logs",
+          "Destination": "/data/applogs",
+          "Mode": "rw",
+          "RW": true,
+          "Propagation": "rprivate"
+        }
+      ],
+      "Networks": {
+        "big-market_my-network": {
+          "IPAMConfig": null,
+          "Links": [
+            "big-market-mysql-1:mysql",
+            "big-market-mysql-1:mysql-1",
+            "big-market-mysql-1:big-market-mysql-1"
+          ],
+          "Aliases": [
+            "big-market-xxl-job-admin-1",
+            "xxl-job-admin"
+          ],
+          "DriverOpts": null,
+          "GwPriority": 0,
+          "NetworkID": "14ae3d5f13998e2894007e715801963eab222f1377936398efa0134165fbba0d",
+          "EndpointID": "",
+          "Gateway": "",
+          "IPAddress": "",
+          "MacAddress": "",
+          "IPPrefixLen": 0,
+          "IPv6Gateway": "",
+          "GlobalIPv6Address": "",
+          "GlobalIPv6PrefixLen": 0,
+          "DNSNames": [
+            "big-market-xxl-job-admin-1",
+            "xxl-job-admin",
+            "2d961651078c"
+          ]
+        }
+      }
+    },
+    {
+      "Id": "9c438285bd9180b690488f54aab2beddf6770b05613074907621676c2718b082",
+      "Name": "/big-market-nacos-1",
+      "Status": "exited",
+      "StartedAt": "2026-10-27T14:24:16.931214446Z",
+      "FinishedAt": "2026-10-27T16:30:22.537898494Z",
+      "RestartPolicy": "no",
+      "Mounts": [],
+      "Networks": {
+        "big-market_my-network": {
+          "IPAMConfig": null,
+          "Links": null,
+          "Aliases": [
+            "big-market-nacos-1",
+            "nacos"
+          ],
+          "DriverOpts": null,
+          "GwPriority": 0,
+          "NetworkID": "14ae3d5f13998e2894007e715801963eab222f1377936398efa0134165fbba0d",
+          "EndpointID": "",
+          "Gateway": "",
+          "IPAddress": "",
+          "MacAddress": "",
+          "IPPrefixLen": 0,
+          "IPv6Gateway": "",
+          "GlobalIPv6Address": "",
+          "GlobalIPv6PrefixLen": 0,
+          "DNSNames": [
+            "big-market-nacos-1",
+            "nacos",
+            "9c438285bd91"
+          ]
+        }
+      }
+    },
+    {
+      "Id": "42568025a4531ba7717617f831d5b5a954e8303ec409aabd7d6f0ee38c749ace",
+      "Name": "/big-market-redis-admin-1",
+      "Status": "exited",
+      "StartedAt": "2026-10-27T14:24:20.965669282Z",
+      "FinishedAt": "2026-10-27T14:24:32.362116747Z",
+      "RestartPolicy": "no",
+      "Mounts": [],
+      "Networks": {
+        "big-market_my-network": {
+          "IPAMConfig": null,
+          "Links": null,
+          "Aliases": [
+            "big-market-redis-admin-1",
+            "redis-admin"
+          ],
+          "DriverOpts": null,
+          "GwPriority": 0,
+          "NetworkID": "14ae3d5f13998e2894007e715801963eab222f1377936398efa0134165fbba0d",
+          "EndpointID": "",
+          "Gateway": "",
+          "IPAddress": "",
+          "MacAddress": "",
+          "IPPrefixLen": 0,
+          "IPv6Gateway": "",
+          "GlobalIPv6Address": "",
+          "GlobalIPv6PrefixLen": 0,
+          "DNSNames": [
+            "big-market-redis-admin-1",
+            "redis-admin",
+            "42568025a453",
+            "redis-commander"
+          ]
+        }
+      }
+    },
+    {
+      "Id": "0c6e9b16a2e00e1e3318dda29422bc5e3026df32b4579bf4cc2691725c0a7546",
+      "Name": "/big-market-rocketmq-1",
+      "Status": "exited",
+      "StartedAt": "2026-10-27T14:24:11.275199274Z",
+      "FinishedAt": "2026-10-27T16:30:22.699643576Z",
+      "RestartPolicy": "no",
+      "Mounts": [
+        {
+          "Type": "bind",
+          "Source": "E:\\big-market\\docs\\dev-ops\\environment\\rocketmq\\data",
+          "Destination": "/home/app/data",
+          "Mode": "rw",
+          "RW": true,
+          "Propagation": "rprivate"
+        }
+      ],
+      "Networks": {
+        "big-market_default": {
+          "IPAMConfig": null,
+          "Links": null,
+          "Aliases": [
+            "big-market-rocketmq-1",
+            "rocketmq"
+          ],
+          "DriverOpts": null,
+          "GwPriority": 0,
+          "NetworkID": "60d7ec593010495a50754a718d1c873d00a19766ea66fcdf0a43fcaec0b8ec40",
+          "EndpointID": "",
+          "Gateway": "",
+          "IPAddress": "",
+          "MacAddress": "",
+          "IPPrefixLen": 0,
+          "IPv6Gateway": "",
+          "GlobalIPv6Address": "",
+          "GlobalIPv6PrefixLen": 0,
+          "DNSNames": [
+            "big-market-rocketmq-1",
+            "rocketmq",
+            "0c6e9b16a2e0"
+          ]
+        }
+      }
+    },
+    {
+      "Id": "0fdeb23a40929ac729f3e9325731cb647d58b3ddd9a59ed1fe41f6facfa20806",
+      "Name": "/big-market-phpmyadmin-1",
+      "Status": "exited",
+      "StartedAt": "2026-10-27T14:24:08.731847255Z",
+      "FinishedAt": "2026-10-27T16:30:20.737871534Z",
+      "RestartPolicy": "no",
+      "Mounts": [],
+      "Networks": {
+        "big-market_my-network": {
+          "IPAMConfig": null,
+          "Links": null,
+          "Aliases": [
+            "big-market-phpmyadmin-1",
+            "phpmyadmin"
+          ],
+          "DriverOpts": null,
+          "GwPriority": 0,
+          "NetworkID": "14ae3d5f13998e2894007e715801963eab222f1377936398efa0134165fbba0d",
+          "EndpointID": "",
+          "Gateway": "",
+          "IPAddress": "",
+          "MacAddress": "",
+          "IPPrefixLen": 0,
+          "IPv6Gateway": "",
+          "GlobalIPv6Address": "",
+          "GlobalIPv6PrefixLen": 0,
+          "DNSNames": [
+            "big-market-phpmyadmin-1",
+            "phpmyadmin",
+            "0fdeb23a4092"
+          ]
+        }
+      }
+    },
+    {
+      "Id": "3d3847acb31c774dd1375d151cb63d5c512854d53f48ebbed2b2c5ff990ae800",
+      "Name": "/big-market-redis-1",
+      "Status": "exited",
+      "StartedAt": "2026-10-27T14:24:09.369914121Z",
+      "FinishedAt": "2026-10-27T16:30:19.713448613Z",
+      "RestartPolicy": "no",
+      "Mounts": [
+        {
+          "Type": "volume",
+          "Name": "feb3255ba1f22880ba2cd585a0107f326cf0c5a2ef7c145f21bd8d8865b85dff",
+          "Source": "/var/lib/docker/volumes/feb3255ba1f22880ba2cd585a0107f326cf0c5a2ef7c145f21bd8d8865b85dff/_data",
+          "Destination": "/data",
+          "Driver": "local",
+          "Mode": "",
+          "RW": true,
+          "Propagation": ""
+        },
+        {
+          "Type": "bind",
+          "Source": "E:\\big-market\\docs\\dev-ops\\environment\\redis\\redis.conf",
+          "Destination": "/usr/local/etc/redis/redis.conf",
+          "Mode": "rw",
+          "RW": true,
+          "Propagation": "rprivate"
+        }
+      ],
+      "Networks": {
+        "big-market_my-network": {
+          "IPAMConfig": null,
+          "Links": null,
+          "Aliases": [
+            "big-market-redis-1",
+            "redis"
+          ],
+          "DriverOpts": null,
+          "GwPriority": 0,
+          "NetworkID": "14ae3d5f13998e2894007e715801963eab222f1377936398efa0134165fbba0d",
+          "EndpointID": "",
+          "Gateway": "",
+          "IPAddress": "",
+          "MacAddress": "",
+          "IPPrefixLen": 0,
+          "IPv6Gateway": "",
+          "GlobalIPv6Address": "",
+          "GlobalIPv6PrefixLen": 0,
+          "DNSNames": [
+            "big-market-redis-1",
+            "redis",
+            "3d3847acb31c"
+          ]
+        }
+      }
+    },
+    {
+      "Id": "c0b68a8f90b20c6ed04e6cf532b68fe92d1d757ca735f6364f97b02e9d191888",
+      "Name": "/big-market-mysql-1",
+      "Status": "exited",
+      "StartedAt": "2026-10-27T14:24:09.919717333Z",
+      "FinishedAt": "2026-10-27T16:30:26.499771701Z",
+      "RestartPolicy": "no",
+      "Mounts": [
+        {
+          "Type": "bind",
+          "Source": "/run/desktop/mnt/host/e/big-market/docs/dev-ops/environment/sql",
+          "Destination": "/docker-entrypoint-initdb.d",
+          "Mode": "rw",
+          "RW": true,
+          "Propagation": "rprivate"
+        },
+        {
+          "Type": "volume",
+          "Name": "big-market_big-market-mysql-data",
+          "Source": "/var/lib/docker/volumes/big-market_big-market-mysql-data/_data",
+          "Destination": "/var/lib/mysql",
+          "Driver": "local",
+          "Mode": "rw",
+          "RW": true,
+          "Propagation": ""
+        }
+      ],
+      "Networks": {
+        "big-market_my-network": {
+          "IPAMConfig": null,
+          "Links": null,
+          "Aliases": [
+            "big-market-mysql-1",
+            "mysql"
+          ],
+          "DriverOpts": null,
+          "GwPriority": 0,
+          "NetworkID": "14ae3d5f13998e2894007e715801963eab222f1377936398efa0134165fbba0d",
+          "EndpointID": "",
+          "Gateway": "",
+          "IPAddress": "",
+          "MacAddress": "",
+          "IPPrefixLen": 0,
+          "IPv6Gateway": "",
+          "GlobalIPv6Address": "",
+          "GlobalIPv6PrefixLen": 0,
+          "DNSNames": [
+            "big-market-mysql-1",
+            "mysql",
+            "c0b68a8f90b2"
+          ]
+        }
+      }
+    },
+    {
+      "Id": "5e85514a25f15ec46a7bc5de518332eb665746489a54b83c58dbf06ba2f4790f",
+      "Name": "/mysql",
+      "Status": "exited",
+      "StartedAt": "2026-10-22T14:37:10.81900574Z",
+      "FinishedAt": "2026-10-23T03:43:38.658981003Z",
+      "RestartPolicy": "no",
+      "Mounts": [
+        {
+          "Type": "bind",
+          "Source": "E:\\s-pay-mall-ddd\\docs\\dev-ops\\mysql\\sql",
+          "Destination": "/docker-entrypoint-initdb.d",
+          "Mode": "rw",
+          "RW": true,
+          "Propagation": "rprivate"
+        },
+        {
+          "Type": "volume",
+          "Name": "2dd06b968a6fe6593aeaa05a4f75071a73d164f6da238c47f3ca33667d35e67d",
+          "Source": "/var/lib/docker/volumes/2dd06b968a6fe6593aeaa05a4f75071a73d164f6da238c47f3ca33667d35e67d/_data",
+          "Destination": "/var/lib/mysql",
+          "Driver": "local",
+          "Mode": "",
+          "RW": true,
+          "Propagation": ""
+        }
+      ],
+      "Networks": {}
+    }
+  ]
+}

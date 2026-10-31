@@ -1,0 +1,19 @@
+# Real-auth HTTP ingress cross-check
+
+Run manually from E:\credit_risk:
+
+```powershell
+.\performance\run-jmeter-ingress.ps1
+```
+
+Prerequisites: dedicated `credit-risk-v2-redis` already running; existing fast-ingress test classes and dependency classpath compiled; official Apache JMeter 5.6.3 under `.tools/apache-jmeter-5.6.3`. The runner does not start/restart containers. It selects a fresh empty Redis logical database and retains its identity fixture, without copying or clearing existing data.
+
+The same isolated Java process, real Controller, original HGETALL + PEXPIRE authentication, validation, bounded ingress, rejection handling and fast consuming test implementation serve all six measurements. No risk, stock, SQL, payment, or Agent work is executed. JVM heaps: server and JMeter each 128m initial / 384m max, SerialGC. No production configuration is changed. Each measured thread group runs for 5 seconds; startup, JMeter warmup and file-handshake are excluded. Responses already in flight may finish after the load boundary. Only a maximum 3-second empty-queue check is used. Owned JVMs have finite deadlines and are killed in finally blocks; other services remain unchanged.
+
+Both tools target 700 requests/s, concurrency 32/64/128, keep-alive, 128 identities and unique request IDs. Python uses a bounded scheduled producer and skips late/full slots. JMeter uses synchronous HTTP sampler threads and a compiled test-only Groovy preprocessor with a shared monotonic-clock 700/s pacer and one common 5s cutoff; overdue slots are attempted rather than discarded. Thread startup is included in that common JMeter interval. These are **not identical arrival processes**. Neither target 3500 requests nor JMeter's console summary (which includes warmup/control samplers) is the measured POST throughput. The shared deadline replaces the initial ConstantThroughputTimer plan after observed late starts under host pressure. Earlier experimental directories remain available and are excluded from final comparisons.
+
+`result.json` uses only measured POSTs. QPS denominator includes responses finishing after 5 seconds (minimum denominator 5s); Python also preserves exact writes/completions during the 5s window. JMeter samples are attempts at the HTTP sampler boundary, not packet-level proof of network transmission; numeric response status proves receipt. `not_attempted_against_target` is a target deficit, not server rejection. Submitted requires HTTP 202 plus receipt `newSubmission=true`. Every measured submitted count must equal the test consumer count increment. Counter values themselves are cumulative; use counter deltas. JMeter JTL contains timestamps/status/latency/request ID/submitted flag, never response bodies. Python raw timing similarly strips response bodies.
+
+`resource_samples` captures periodic server diagnostic snapshots and host memory; JMeter process RSS is captured separately. CPU core equivalents are cumulative process CPU deltas divided by observation duration, not percent of the entire machine. Resource observation includes the short post-load response/shutdown interval; use `measurement_wall_seconds` and native-clock fields for its exact scope. These short measurements are diagnostic comparisons, not stable capacity claims. Server traces are bounded at 4096, with omitted count exposed. Redis INFO command statistics are instance-wide and include admin/control reads; do not equate them with exact POST-only counts.
+
+Raw files under `performance/results/jmeter-crosscheck-*`: configuration, server invocation, main-source SHA256 map, each tool's result, Python request timings, JMeter JTL/log/CLI command, Redis INFO before/after, and cleanup checks. The JMX is generated reproducibly by the Python runner. Diagnostic server snapshots use the existing optional test-only instrumentation. Production sources are hashed before and after and must remain identical.

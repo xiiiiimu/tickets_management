@@ -1,0 +1,291 @@
+{
+  "uid": "reservation-v2",
+  "title": "Ticket Reservation V2",
+  "schemaVersion": 30,
+  "version": 2,
+  "refresh": "10s",
+  "time": {
+    "from": "now-30m",
+    "to": "now"
+  },
+  "tags": [
+    "ticketing",
+    "reservation-v2"
+  ],
+  "panels": [
+    {
+      "id": 1,
+      "type": "timeseries",
+      "title": "Reliable reservations / second (not HTTP 202)",
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 12,
+        "h": 8
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "ticket-prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(rate(reservation_v2_confirmed_total[1m]))"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "type": "timeseries",
+      "title": "PASS / REVIEW queue wait mean seconds",
+      "gridPos": {
+        "x": 12,
+        "y": 0,
+        "w": 12,
+        "h": 8
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "ticket-prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (decision) (rate(reservation_v2_queue_wait_seconds_sum[1m])) / sum by (decision) (rate(reservation_v2_queue_wait_seconds_count[1m]))",
+          "legendFormat": "{{decision}}"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "timeseries",
+      "title": "Measured operation P95 seconds (inclusive, do not add)",
+      "gridPos": {
+        "x": 0,
+        "y": 8,
+        "w": 12,
+        "h": 9
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "ticket-prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "histogram_quantile(0.95, sum by (operation,le) (rate(ticketing_operation_duration_seconds_bucket{outcome=\"success\"}[2m])))",
+          "legendFormat": "{{operation}}"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "type": "timeseries",
+      "title": "Connection pool active / pending",
+      "gridPos": {
+        "x": 12,
+        "y": 8,
+        "w": 12,
+        "h": 9
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "ticket-prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "hikaricp_connections_active",
+          "legendFormat": "active {{pool}}"
+        },
+        {
+          "refId": "B",
+          "expr": "hikaricp_connections_pending",
+          "legendFormat": "pending {{pool}}"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "type": "timeseries",
+      "title": "Risk classification outcomes / second",
+      "gridPos": {
+        "x": 0,
+        "y": 17,
+        "w": 12,
+        "h": 8
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "ticket-prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by(decision) (rate(reservation_risk_decision_total[1m]))",
+          "legendFormat": "{{decision}}"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "type": "timeseries",
+      "title": "Outbox failures and worker rejections",
+      "gridPos": {
+        "x": 12,
+        "y": 17,
+        "w": 12,
+        "h": 8
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "ticket-prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "rate(mq_outbox_publish_failed_total[1m])",
+          "legendFormat": "outbox failed"
+        },
+        {
+          "refId": "B",
+          "expr": "threadpool_reject",
+          "legendFormat": "rejected {{pool}}"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "type": "timeseries",
+      "title": "POST total / submitted per second",
+      "gridPos": {
+        "x": 0,
+        "y": 25,
+        "w": 12,
+        "h": 8
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "ticket-prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(rate(http_server_requests_seconds_count{method=\"POST\",uri=\"/api/tickets/reservations\"}[1m]))",
+          "legendFormat": "POST responses"
+        },
+        {
+          "refId": "B",
+          "expr": "sum(rate(reservation_ingress_submitted_total[1m]))",
+          "legendFormat": "new executor submissions"
+        },
+        {
+          "refId": "C",
+          "expr": "sum(rate(reservation_ingress_received_response_total[1m]))",
+          "legendFormat": "202 receipts incl duplicates"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "type": "timeseries",
+      "title": "POST P50 / P95 / P99 seconds",
+      "gridPos": {
+        "x": 12,
+        "y": 25,
+        "w": 12,
+        "h": 8
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "ticket-prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "histogram_quantile(0.5, sum by(le) (rate(http_server_requests_seconds_bucket{method=\"POST\",uri=\"/api/tickets/reservations\"}[2m])))",
+          "legendFormat": "0.5"
+        },
+        {
+          "refId": "B",
+          "expr": "histogram_quantile(0.95, sum by(le) (rate(http_server_requests_seconds_bucket{method=\"POST\",uri=\"/api/tickets/reservations\"}[2m])))",
+          "legendFormat": "0.95"
+        },
+        {
+          "refId": "C",
+          "expr": "histogram_quantile(0.99, sum by(le) (rate(http_server_requests_seconds_bucket{method=\"POST\",uri=\"/api/tickets/reservations\"}[2m])))",
+          "legendFormat": "0.99"
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "type": "timeseries",
+      "title": "Volatile ingress backlog / oldest wait",
+      "gridPos": {
+        "x": 0,
+        "y": 33,
+        "w": 12,
+        "h": 8
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "ticket-prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "reservation_ingress_queue_depth",
+          "legendFormat": "queue"
+        },
+        {
+          "refId": "B",
+          "expr": "reservation_ingress_active",
+          "legendFormat": "workers"
+        },
+        {
+          "refId": "C",
+          "expr": "reservation_ingress_oldest_wait",
+          "legendFormat": "oldest seconds"
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "type": "timeseries",
+      "title": "Ingress rejections / expirations per second",
+      "gridPos": {
+        "x": 12,
+        "y": 33,
+        "w": 12,
+        "h": 8
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "ticket-prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by(reason) (rate(reservation_ingress_rejected_total[1m]))",
+          "legendFormat": "rejected {{reason}}"
+        },
+        {
+          "refId": "B",
+          "expr": "sum(rate(reservation_ingress_expired_total[1m]))",
+          "legendFormat": "expired"
+        },
+        {
+          "refId": "C",
+          "expr": "sum(rate(reservation_ingress_background_rejected_total[1m]))",
+          "legendFormat": "background rejected"
+        },
+        {
+          "refId": "D",
+          "expr": "sum(rate(reservation_ingress_background_unavailable_total[1m]))",
+          "legendFormat": "background unresolved"
+        }
+      ]
+    }
+  ]
+}

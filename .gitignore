@@ -1,0 +1,90 @@
+# OS / IDE
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.iml
+.obsidian/
+.accelerate/
+.claude/
+
+# Secrets / env (keep .env.example)
+.env
+.env.*
+!.env.example
+!**/.env.example
+**/.env
+**/.env.*
+!**/.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+credentials.json
+secrets.json
+**/secrets/
+**/credentials/
+
+# Logs / runtime output
+*.log
+*.log.*
+logs/
+backend.log
+consume.txt
+nohup.out
+
+# JMeter reports & artifacts (keep .jmx test plans)
+jmeter-results/
+jmeter-results-*/
+jmeter-report/
+jmeter-reports/
+**/html-report/
+performance/results/*/
+!performance/results/.gitkeep
+*.jtl
+jmeter.log
+aggregate-summary.csv
+comparison.csv
+performance/results/app-*.log
+
+# Java
+ticket-risk-platform/target/
+*.class
+*.jar
+!**/src/main/**/lib/*.jar
+
+# Python
+risk-agent/.venv/
+risk-agent/venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+dist/
+
+# Node
+ticket-risk-web/node_modules/
+ticket-risk-web/dist/
+
+# Local junk (do not commit)
+Navicat Premium 16/
+scripts/
+
+*.tsbuildinfo
+
+# Local workspaces, installed tools and private notes
+/.tmp/
+/tmp/
+/.tools/
+/interview-prep/
+/migration-history/
+
+# Raw diagnostics and local database exports
+/performance/results/
+*.jfr
+*.hprof
+*.dump
+*.rdb
+*.aof

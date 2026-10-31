@@ -1,0 +1,55 @@
+server:
+  port: 8082
+  forward-headers-strategy: native
+  tomcat:
+    remoteip:
+      remote-ip-header: x-forwarded-for
+      internal-proxies: '172\.30\.0\.10'
+spring:
+  application:
+    name: ticket-risk-platform
+  datasource:
+    driver-class-name: com.mysql.jdbc.Driver
+    url: ${DB_URL:jdbc:mysql://127.0.0.1:3307/ticketing?useSSL=false&serverTimezone=UTC&characterEncoding=utf8}
+    username: ${DB_USER:ticketing}
+    password: ${DB_PASSWORD:ticketing-local}
+    initialization-mode: never
+  redis:
+    host: ${REDIS_HOST:127.0.0.1}
+    port: ${REDIS_PORT:6379}
+    timeout: 2s
+  jackson:
+    default-property-inclusion: non_null
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics,prometheus
+rocketmq:
+  name-server: ${MQ_NAMESERVER:127.0.0.1:9876}
+  producer:
+    group: ticket-outbox-producer
+    send-message-timeout: 3000
+ticketing:
+  dev:
+    expose-login-code: ${DEMO_LOGIN_ENABLED:false}
+  mq:
+    enabled: true
+  agent:
+    url: ${RISK_AGENT_URL:http://127.0.0.1:8090}
+    key: ${INTERNAL_API_KEY:}
+  outbox:
+    max-retries: 12
+  jobs:
+    enabled: true
+    interval-ms: 1000
+  pools:
+    outbox: {core: 2, max: 4, queue: 100}
+    compensation: {core: 1, max: 2, queue: 50}
+    reservation: {core: 1, max: 2, queue: 50}
+    timeout: {core: 1, max: 2, queue: 50}
+    cache: {core: 1, max: 2, queue: 50}
+    risk: {core: 4, max: 16, queue: 200}
+logging:
+  pattern:
+    level: '%5p [trace=%X{traceId}]'

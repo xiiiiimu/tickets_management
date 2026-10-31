@@ -1,0 +1,3 @@
+ticketing:
+  mq:
+    enabled: false

@@ -1,0 +1,321 @@
+{
+  "uid": "ticket-core",
+  "title": "Ticket Risk 核心链路",
+  "schemaVersion": 39,
+  "version": 2,
+  "refresh": "15s",
+  "time": {
+    "from": "now-30m",
+    "to": "now"
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "timeseries",
+      "title": "业务阶段 P95（秒）",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "ticket-prometheus"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "histogram_quantile(0.95, sum by (le,operation) (rate(ticketing_operation_duration_seconds_bucket[5m])))",
+          "legendFormat": "{{operation}} {{outcome}} {{status}} {{pool}}"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "type": "timeseries",
+      "title": "业务执行次数/秒",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "ticket-prometheus"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 0,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (operation,outcome) (rate(ticketing_operation_duration_seconds_count[5m]))",
+          "legendFormat": "{{operation}} {{outcome}} {{status}} {{pool}}"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "timeseries",
+      "title": "数据库连接等待",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "ticket-prometheus"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 8,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "hikaricp_connections_pending",
+          "legendFormat": "{{operation}} {{outcome}} {{status}} {{pool}}"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "type": "timeseries",
+      "title": "连接获取 P95（秒）",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "ticket-prometheus"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 8,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "histogram_quantile(0.95, sum by (le,pool) (rate(hikaricp_connections_acquire_seconds_bucket[5m])))",
+          "legendFormat": "{{operation}} {{outcome}} {{status}} {{pool}}"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "type": "timeseries",
+      "title": "Agent 调用耗时（秒）",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "ticket-prometheus"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 16,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (status) (rate(risk_agent_http_duration_seconds_sum[5m])) / sum by (status) (rate(risk_agent_http_duration_seconds_count[5m]))",
+          "legendFormat": "{{operation}} {{outcome}} {{status}} {{pool}}"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "type": "timeseries",
+      "title": "Agent 执行状态/秒",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "ticket-prometheus"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 16,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (status) (rate(risk_agent_execution_total[5m]))",
+          "legendFormat": "{{operation}} {{outcome}} {{status}} {{pool}}"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "type": "timeseries",
+      "title": "后台线程池排队",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "ticket-prometheus"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 24,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "threadpool_queue",
+          "legendFormat": "{{operation}} {{outcome}} {{status}} {{pool}}"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "type": "timeseries",
+      "title": "Outbox 待处理",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "ticket-prometheus"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 24,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "mq_outbox_pending",
+          "legendFormat": "{{operation}} {{outcome}} {{status}} {{pool}}"
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "type": "timeseries",
+      "title": "指标快照年龄（秒）",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "ticket-prometheus"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 32,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "platform_snapshot_age",
+          "legendFormat": "{{operation}} {{outcome}} {{status}} {{pool}}"
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "type": "timeseries",
+      "title": "库存配置发布失败/秒",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "ticket-prometheus"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 32,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "rate(inventory_config_publish_failure_total[5m])",
+          "legendFormat": "{{operation}} {{outcome}} {{status}} {{pool}}"
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "type": "timeseries",
+      "title": "HTTP 抢票 P95（秒）",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "ticket-prometheus"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 40,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(http_server_requests_seconds_bucket{uri=\"/api/tickets/reserve\"}[5m])))",
+          "legendFormat": "{{operation}} {{outcome}} {{status}} {{pool}}"
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "type": "timeseries",
+      "title": "快照采样耗时（秒）",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "ticket-prometheus"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 40,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "rate(platform_snapshot_duration_seconds_sum[5m]) / rate(platform_snapshot_duration_seconds_count[5m])",
+          "legendFormat": "{{operation}} {{outcome}} {{status}} {{pool}}"
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "type": "timeseries",
+      "title": "开售装配与恢复次数",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "ticket-prometheus"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 48,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (operation,outcome) (rate(sale_armory_operation_total[5m]))",
+          "legendFormat": "{{operation}} {{outcome}}"
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "type": "timeseries",
+      "title": "开售装配与恢复平均耗时（秒）",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "ticket-prometheus"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 48,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (operation,outcome) (rate(sale_armory_duration_seconds_sum[5m])) / sum by (operation,outcome) (rate(sale_armory_duration_seconds_count[5m]))",
+          "legendFormat": "{{operation}} {{outcome}}"
+        }
+      ]
+    }
+  ]
+}

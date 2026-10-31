@@ -1,0 +1,15 @@
+CONTAINER ID   IMAGE                                                       COMMAND                  CREATED          STATUS                       PORTS     NAMES
+8d4582d42633   grafana/grafana:11.2.0                                      "/run.sh"                26 minutes ago   Exited (0) 2 minutes ago               credit-risk-dev-grafana
+e28a4b473dab   apache/rocketmq:4.9.7                                       "sh /home/rocketmq/r…"   26 minutes ago   Exited (143) 2 minutes ago             credit-risk-dev-broker
+e7d15dda57e1   prom/prometheus:v2.53.0                                     "/bin/prometheus --c…"   26 minutes ago   Exited (0) 2 minutes ago               credit-risk-dev-prometheus
+4136b16c1559   mysql:8.0.32                                                "docker-entrypoint.s…"   26 minutes ago   Exited (0) 2 minutes ago               credit-risk-dev-mysql
+e4dc8e8119fe   redis:7.2.0                                                 "docker-entrypoint.s…"   26 minutes ago   Exited (0) 2 minutes ago               credit-risk-dev-redis
+6712d693dbc9   apache/rocketmq:4.9.7                                       "sh /home/rocketmq/r…"   26 minutes ago   Exited (143) 2 minutes ago             credit-risk-dev-namesrv
+2d961651078c   xuxueli/xxl-job-admin:2.4.0                                 "sh -c 'java -jar $J…"   4 days ago       Exited (137) 10 hours ago              big-market-xxl-job-admin-1
+9c438285bd91   nacos/nacos-server:v2.2.3-slim                              "bin/docker-startup.…"   4 days ago       Exited (137) 10 hours ago              big-market-nacos-1
+42568025a453   spryker/redis-commander:0.8.0                               "/usr/bin/dumb-init …"   4 days ago       Exited (0) 12 hours ago                big-market-redis-admin-1
+0c6e9b16a2e0   livinphp/rocketmq:5.1.0                                     "/bin/sh -c ${USER_H…"   4 days ago       Exited (137) 10 hours ago              big-market-rocketmq-1
+0fdeb23a4092   phpmyadmin:5.2.1                                            "/docker-entrypoint.…"   4 days ago       Exited (0) 10 hours ago                big-market-phpmyadmin-1
+3d3847acb31c   redis:7.2.0                                                 "docker-entrypoint.s…"   4 days ago       Exited (0) 10 hours ago                big-market-redis-1
+c0b68a8f90b2   mysql:8.0.32                                                "docker-entrypoint.s…"   4 days ago       Exited (137) 10 hours ago              big-market-mysql-1
+5e85514a25f1   registry.cn-hangzhou.aliyuncs.com/xfg-studio/mysql:8.0.32   "docker-entrypoint.s…"   8 days ago       Exited (128) 4 days ago                mysql

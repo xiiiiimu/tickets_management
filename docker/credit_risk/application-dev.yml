@@ -1,0 +1,24 @@
+# Additional local-only configuration; original application.yml remains unchanged.
+server:
+  port: ${CREDIT_RISK_JAVA_PORT:18082}
+spring:
+  datasource:
+    url: jdbc:mysql://127.0.0.1:${CREDIT_RISK_MYSQL_PORT:13306}/${CREDIT_RISK_MYSQL_DATABASE:credit_risk_dev}?useSSL=false&serverTimezone=UTC&useLegacyDatetimeCode=false&characterEncoding=utf8&allowPublicKeyRetrieval=true
+    username: ${CREDIT_RISK_MYSQL_USER:credit_risk_app}
+    password: ${CREDIT_RISK_MYSQL_PASSWORD}
+    initialization-mode: never
+  redis:
+    host: 127.0.0.1
+    port: ${CREDIT_RISK_REDIS_PORT:16379}
+    password: ${CREDIT_RISK_REDIS_PASSWORD}
+rocketmq:
+  name-server: 127.0.0.1:${CREDIT_RISK_NAMESRV_PORT:19876}
+ticketing:
+  sale:
+    armory:
+      enabled: true
+  inventory:
+    bucket-count: 16
+  agent:
+    url: http://127.0.0.1:8090
+    key: ${CREDIT_RISK_INTERNAL_API_KEY}

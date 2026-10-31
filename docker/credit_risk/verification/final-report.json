@@ -1,0 +1,76 @@
+{
+  "verified_at_utc": "2026-10-28T02:49:44.790561+00:00",
+  "project": "credit-risk-dev",
+  "directory": "E:\\credit_risk\\docker\\credit_risk",
+  "containers": [
+    {
+      "name": "credit-risk-dev-grafana",
+      "id": "8d4582d42633c30d973e2e7969298f96cefa9e0e1fad702c5927c6b7702c50fb",
+      "state": "exited",
+      "exit_code": 0,
+      "restart_policy": "no"
+    },
+    {
+      "name": "credit-risk-dev-broker",
+      "id": "e28a4b473dab1cc1f521ce9e85b1c99c94a72a271a36805c21aab13717daaa72",
+      "state": "exited",
+      "exit_code": 143,
+      "restart_policy": "no"
+    },
+    {
+      "name": "credit-risk-dev-prometheus",
+      "id": "e7d15dda57e12bde8291490c086c3e5cac3666fca72df8ec07434a989b3d3200",
+      "state": "exited",
+      "exit_code": 0,
+      "restart_policy": "no"
+    },
+    {
+      "name": "credit-risk-dev-mysql",
+      "id": "4136b16c1559f7d47deab2d0ec2b77d1684923f265710920719752fbbdae3565",
+      "state": "exited",
+      "exit_code": 0,
+      "restart_policy": "no"
+    },
+    {
+      "name": "credit-risk-dev-redis",
+      "id": "e4dc8e8119fe6055a36c90fb6cd2f41b327f5d0bc7742e374d8727e1d5ff9344",
+      "state": "exited",
+      "exit_code": 0,
+      "restart_policy": "no"
+    },
+    {
+      "name": "credit-risk-dev-namesrv",
+      "id": "6712d693dbc9beb2b895c3ad4cf6fb24ae39577c20c62044d3075022c90c230f",
+      "state": "exited",
+      "exit_code": 143,
+      "restart_policy": "no"
+    }
+  ],
+  "network": "credit-risk-dev-network",
+  "new_named_volumes": [],
+  "new_anonymous_volumes": [],
+  "other_containers_unchanged": 8,
+  "other_networks_unchanged": true,
+  "other_volumes_unchanged": true,
+  "business_files_unchanged": 214,
+  "original_git_index_unchanged": true,
+  "secrets_git_ignored": true,
+  "mysql_persistence_verified": true,
+  "redis_persistence_verified": true,
+  "container_ids_preserved": true,
+  "java_metrics_verified": true,
+  "java_probe_stopped": true,
+  "automatic_startup_configured": false,
+  "ports": {
+    "mysql": 13306,
+    "redis": 16379,
+    "namesrv": 19876,
+    "broker": 20911,
+    "broker_vip": 20909,
+    "prometheus": 19090,
+    "grafana": 13000,
+    "local_java": 18082
+  },
+  "manual_start_observed": "User confirmed the intervening startup was manual; project was stopped again afterward.",
+  "matching_scheduled_tasks": 0
+}

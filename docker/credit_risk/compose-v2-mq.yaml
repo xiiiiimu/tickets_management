@@ -1,0 +1,31 @@
+name: credit-risk-v2-mq
+services:
+  namesrv:
+    image: apache/rocketmq:4.9.7
+    container_name: credit-risk-v2-bench-namesrv
+    restart: "no"
+    command: [sh, /home/rocketmq/rocketmq-4.9.7/bin/mqnamesrv]
+    environment:
+      JAVA_OPT_EXT: -Xms128m -Xmx128m -XX:MaxDirectMemorySize=64m
+    ports: ["127.0.0.1:22976:9876"]
+    networks: [bench]
+  broker:
+    image: apache/rocketmq:4.9.7
+    container_name: credit-risk-v2-bench-broker
+    user: "0:0"
+    restart: "no"
+    command: [sh, /home/rocketmq/rocketmq-4.9.7/bin/mqbroker, -n, namesrv:9876, -c, /home/rocketmq/conf/bench.conf]
+    environment:
+      JAVA_OPT_EXT: -Xms256m -Xmx256m -XX:MaxDirectMemorySize=128m
+    ports: ["127.0.0.1:22911:22911", "127.0.0.1:22909:22909"]
+    volumes:
+      - ./rocketmq/v2-benchmark.conf:/home/rocketmq/conf/bench.conf:ro
+      - store:/home/rocketmq/store
+    networks: [bench]
+    depends_on: [namesrv]
+volumes:
+  store:
+    name: credit-risk-v2-mq-store
+networks:
+  bench:
+    name: credit-risk-v2-mq-network

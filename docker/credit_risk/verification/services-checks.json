@@ -1,0 +1,172 @@
+{
+  "verified_at_utc": "2026-10-28T02:39:09.477405+00:00",
+  "mysql": {
+    "version": "8.0.32",
+    "database": "credit_risk_dev",
+    "user": "credit_risk_app@%",
+    "server_uuid": "8e4a3560-d276-11f1-95a5-5af924168eaa",
+    "migration_tables": 4,
+    "seed_users": 2,
+    "seed_events": 1,
+    "seed_skus": 3,
+    "orders": 0
+  },
+  "redis": {
+    "ping": "PONG",
+    "persistence_key": "credit-risk-dev:verification:persistence",
+    "persistence_value": "8ff509b4-f0b6-4628-ac44-c461f23e5645"
+  },
+  "rocketmq": {
+    "version": "4.9.7",
+    "cluster": "credit-risk-dev-cluster",
+    "broker": "127.0.0.1:20911",
+    "topic": "ticket-events",
+    "read_queues": 8,
+    "write_queues": 8
+  },
+  "prometheus": {
+    "version": "2.53.0",
+    "ready": true
+  },
+  "grafana": {
+    "version": "11.2.0",
+    "datasource_status": "OK",
+    "dashboard_panels": 14
+  },
+  "containers": [
+    {
+      "name": "credit-risk-dev-grafana",
+      "id": "8d4582d42633c30d973e2e7969298f96cefa9e0e1fad702c5927c6b7702c50fb",
+      "restart": "no",
+      "health": "healthy",
+      "mounts": [
+        {
+          "source": "E:\\credit_risk\\docker\\grafana\\provisioning",
+          "destination": "/etc/grafana/provisioning",
+          "rw": false,
+          "type": "bind"
+        },
+        {
+          "source": "E:\\credit_risk\\docker\\credit_risk\\data\\grafana",
+          "destination": "/var/lib/grafana",
+          "rw": true,
+          "type": "bind"
+        },
+        {
+          "source": "E:\\credit_risk\\docker\\grafana\\dashboards",
+          "destination": "/var/lib/grafana/dashboards",
+          "rw": false,
+          "type": "bind"
+        }
+      ]
+    },
+    {
+      "name": "credit-risk-dev-broker",
+      "id": "e28a4b473dab1cc1f521ce9e85b1c99c94a72a271a36805c21aab13717daaa72",
+      "restart": "no",
+      "health": "healthy",
+      "mounts": [
+        {
+          "source": "E:\\credit_risk\\docker\\credit_risk\\data\\rocketmq\\broker\\logs",
+          "destination": "/home/rocketmq/logs",
+          "rw": true,
+          "type": "bind"
+        },
+        {
+          "source": "E:\\credit_risk\\docker\\credit_risk\\data\\rocketmq\\broker\\store",
+          "destination": "/home/rocketmq/store",
+          "rw": true,
+          "type": "bind"
+        },
+        {
+          "source": "E:\\credit_risk\\docker\\credit_risk\\runtime\\broker.conf",
+          "destination": "/home/rocketmq/conf/credit-risk-broker.conf",
+          "rw": false,
+          "type": "bind"
+        }
+      ]
+    },
+    {
+      "name": "credit-risk-dev-prometheus",
+      "id": "e7d15dda57e12bde8291490c086c3e5cac3666fca72df8ec07434a989b3d3200",
+      "restart": "no",
+      "health": "healthy",
+      "mounts": [
+        {
+          "source": "E:\\credit_risk\\docker\\credit_risk\\data\\prometheus",
+          "destination": "/prometheus",
+          "rw": true,
+          "type": "bind"
+        },
+        {
+          "source": "E:\\credit_risk\\docker\\credit_risk\\prometheus\\prometheus.yml",
+          "destination": "/etc/prometheus/prometheus.yml",
+          "rw": false,
+          "type": "bind"
+        }
+      ]
+    },
+    {
+      "name": "credit-risk-dev-mysql",
+      "id": "4136b16c1559f7d47deab2d0ec2b77d1684923f265710920719752fbbdae3565",
+      "restart": "no",
+      "health": "healthy",
+      "mounts": [
+        {
+          "source": "E:\\credit_risk\\ticket-risk-platform\\src\\main\\resources\\schema.sql",
+          "destination": "/docker-entrypoint-initdb.d/01-schema.sql",
+          "rw": false,
+          "type": "bind"
+        },
+        {
+          "source": "E:\\credit_risk\\ticket-risk-platform\\src\\main\\resources\\data.sql",
+          "destination": "/docker-entrypoint-initdb.d/02-data.sql",
+          "rw": false,
+          "type": "bind"
+        },
+        {
+          "source": "E:\\credit_risk\\docker\\credit_risk\\data\\mysql",
+          "destination": "/var/lib/mysql",
+          "rw": true,
+          "type": "bind"
+        }
+      ]
+    },
+    {
+      "name": "credit-risk-dev-redis",
+      "id": "e4dc8e8119fe6055a36c90fb6cd2f41b327f5d0bc7742e374d8727e1d5ff9344",
+      "restart": "no",
+      "health": "healthy",
+      "mounts": [
+        {
+          "source": "E:\\credit_risk\\docker\\credit_risk\\data\\redis",
+          "destination": "/data",
+          "rw": true,
+          "type": "bind"
+        }
+      ]
+    },
+    {
+      "name": "credit-risk-dev-namesrv",
+      "id": "6712d693dbc9beb2b895c3ad4cf6fb24ae39577c20c62044d3075022c90c230f",
+      "restart": "no",
+      "health": "healthy",
+      "mounts": [
+        {
+          "source": "E:\\credit_risk\\docker\\credit_risk\\data\\rocketmq\\namesrv\\logs",
+          "destination": "/home/rocketmq/logs",
+          "rw": true,
+          "type": "bind"
+        },
+        {
+          "source": "E:\\credit_risk\\docker\\credit_risk\\data\\rocketmq\\namesrv\\store",
+          "destination": "/home/rocketmq/store",
+          "rw": true,
+          "type": "bind"
+        }
+      ]
+    }
+  ],
+  "named_volumes_created": [],
+  "manual_restart_persistence_verified": true
+}

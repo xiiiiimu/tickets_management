@@ -1,0 +1,37 @@
+.env
+.env.example
+.gitignore
+README.md
+_common.ps1
+application-dev.yml
+compose.yaml
+prometheus/prometheus.yml
+prometheus/prometheus.yml.template
+rocketmq/broker.conf.template
+runtime/broker.conf
+runtime/java-probe.pid
+start.ps1
+status.ps1
+stop.ps1
+verification/before-resources.json
+verification/business-files-before.json
+verification/check-services.py
+verification/created-files.txt
+verification/docker-ps-a-final.txt
+verification/docker-ps-final.txt
+verification/final-audit.py
+verification/final-report.json
+verification/java-metrics-check.json
+verification/java-probe.ps1
+verification/java-probe.stderr.log
+verification/java-probe.stdout.log
+verification/manual-start-audit.json
+verification/original-index.patch
+verification/original-status.txt
+verification/services-checks.json
+
+Current MySQL/Redis storage: named volumes credit-risk-mysql-data and credit-risk-redis-data (migration not executed by this file update).
+Retained legacy rollback directories: data/mysql, data/redis (never delete/move/clear).
+Remaining bind storage: data/prometheus, data/grafana, data/rocketmq/{namesrv,broker}/{logs,store}
+Manual migration tool: migrate-to-named-volumes.ps1 (dry run unless -Execute -WritersQuiesced).
+Private migration backups: backup/<timestamp>/ (git ignored).

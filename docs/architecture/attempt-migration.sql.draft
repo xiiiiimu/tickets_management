@@ -1,0 +1,75 @@
+-- DESIGN ONLY. Not an executable migration and not placed in db/migration.
+-- No database was changed. Review C1/C2, quantity and deployment compatibility first.
+-- Proposed next migration V110 if that number is still unused at implementation time.
+-- Stop old admission, verify old unfinished jobs/intents, deploy compatible readers/recovery
+-- on ALL instances before enabling protocol 3. Do not run against another project's schema.
+
+-- Preserve existing EVALUATING/QUEUED/CLAIMED/RESERVED rows as protocol 2.
+ALTER TABLE tb_reservation_job
+ ADD COLUMN attempt_protocol SMALLINT NOT NULL DEFAULT 2,
+ ADD COLUMN waiting_deadline TIMESTAMP(3) NULL,
+ ADD COLUMN processing_started_at TIMESTAMP(3) NULL,
+ ADD COLUMN processing_phase VARCHAR(24) NULL,
+ ADD COLUMN eligible_seq BIGINT NULL,
+ ADD COLUMN eligibility_ready_at TIMESTAMP(3) NULL,
+ ADD COLUMN profile_stamp CHAR(64) NULL,
+ ADD COLUMN quick_rule_version VARCHAR(80) NULL,
+ ADD COLUMN review_decision VARCHAR(8) NULL,
+ ADD COLUMN inventory_generation BIGINT NULL,
+ ADD KEY idx_attempt_wait(attempt_protocol,state,waiting_deadline,created_at),
+ ADD KEY idx_attempt_ready(sku_id,sale_version,attempt_protocol,state,processing_phase,eligible_seq),
+ ADD UNIQUE KEY uk_attempt_ready_order(sku_id,sale_version,eligible_seq);
+
+-- Short per-SKU qualification publication mutex/cursor; not a new inventory balance.
+-- Cursor increment and eligibility publication must commit atomically.
+CREATE TABLE tb_reservation_sku_lane (
+ sku_id VARCHAR(36) NOT NULL,
+ sale_version BIGINT NOT NULL,
+ ready_tail BIGINT NOT NULL DEFAULT 0,
+ PRIMARY KEY(sku_id,sale_version),
+ CHECK(ready_tail>=0)
+);
+
+-- Optional C2 state is also fenced atomically in the EXISTING SKU-slot Redis reserve Lua.
+-- SQL ready_tail alone cannot enforce Redis stock reservation order.
+-- Do not reconstruct a lost Redis cursor from ready_tail or MAX(eligible_seq) alone.
+
+-- Require an explicit new-protocol max-per-attempt when publishing READY.
+-- NULL on an old row means old manifest/protocol semantics, not an unlimited new sale.
+ALTER TABLE tb_ticket_sku ADD COLUMN max_per_attempt INT NULL;
+ALTER TABLE tb_event_session ADD COLUMN default_max_per_attempt INT NULL;
+
+-- Apply only if cross-bucket quantity is selected.
+-- Keep the old allocation PK and existing sold rows unchanged.
+ALTER TABLE tb_stock_bucket_allocation
+ ADD COLUMN allocation_protocol SMALLINT NOT NULL DEFAULT 2;
+CREATE TABLE tb_stock_bucket_allocation_part (
+ reservation_id VARCHAR(36) NOT NULL,
+ bucket_id INT NOT NULL,
+ quantity INT NOT NULL,
+ PRIMARY KEY(reservation_id,bucket_id),
+ CHECK(bucket_id>=0 AND bucket_id<16),
+ CHECK(quantity>0)
+);
+-- protocol 2: old head is the authoritative single allocation.
+-- protocol 3: head carries total quantity and a single released CAS; parts are the
+-- authoritative per-bucket allocation. SUM(parts.quantity)=head.quantity.
+-- Insert head/parts with stock CAS and order/intent/outbox in the SAME transaction.
+-- Release locks/claims the head once then restores all parts in ascending bucket order.
+-- All release/refund/recovery/Armory readers must understand protocol 3 BEFORE writes.
+
+-- Admission capacity/accounting representation remains a design choice.
+-- Do not initialize a new waiting/processing counter to zero on a live nonempty queue.
+-- Conditional capacity SQL must be demonstrated safe under real multi-instance races.
+
+-- Rollback PRECONDITIONS (read-only checks; these do not perform rollback):
+SELECT attempt_protocol,state,COUNT(*) FROM tb_reservation_job
+ GROUP BY attempt_protocol,state;
+SELECT COUNT(*) AS unfinished_intents FROM tb_reserve_request WHERE status='REQUESTED';
+SELECT allocation_protocol,released,COUNT(*) FROM tb_stock_bucket_allocation
+ GROUP BY allocation_protocol,released;
+SELECT COUNT(*) AS vector_parts FROM tb_stock_bucket_allocation_part;
+
+-- No DROP/DELETE/stock reset provided: switching new writes off is not permission to
+-- delete new-protocol orders, held markers or allocations. Retain compatibility code
+-- for paid/held orders; a destructive schema rollback requires separate approval.

@@ -1,0 +1,111 @@
+services:
+  ticket-mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_DATABASE: ticketing
+      MYSQL_USER: ticketing
+      MYSQL_PASSWORD: ${DB_PASSWORD:-ticketing-local}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root-local-only}
+    command: --default-authentication-plugin=mysql_native_password
+    ports: ["127.0.0.1:3307:3306"]
+    volumes:
+      - ticket_mysql_data:/var/lib/mysql
+      - ./ticket-risk-platform/src/main/resources/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ./ticket-risk-platform/src/main/resources/data.sql:/docker-entrypoint-initdb.d/02-data.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p$$MYSQL_ROOT_PASSWORD"]
+      interval: 5s
+      retries: 30
+  ticket-redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes --maxmemory-policy noeviction
+    ports: ["127.0.0.1:6379:6379"]
+    volumes: ["ticket_redis_data:/data"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      retries: 20
+  ticket-rmqnamesrv:
+    image: apache/rocketmq:4.9.7
+    command: sh mqnamesrv
+    environment:
+      JAVA_OPT_EXT: -Xms256m -Xmx256m
+    ports: ["127.0.0.1:9876:9876"]
+  ticket-rmqbroker:
+    image: apache/rocketmq:4.9.7
+    user: root
+    depends_on: [ticket-rmqnamesrv]
+    environment:
+      NAMESRV_ADDR: ticket-rmqnamesrv:9876
+      JAVA_OPT_EXT: -Xms512m -Xmx512m -XX:MaxDirectMemorySize=256m
+    ports: ["127.0.0.1:10911:10911","127.0.0.1:10909:10909"]
+    volumes:
+      - ./docker/rocketmq/broker.conf:/home/rocketmq/conf/broker.conf:ro
+      - ticket_mq_data:/home/rocketmq/store
+    command: sh mqbroker -n ticket-rmqnamesrv:9876 -c /home/rocketmq/conf/broker.conf
+  ticket-rmq-init:
+    image: apache/rocketmq:4.9.7
+    depends_on: [ticket-rmqbroker]
+    volumes: ["./docker/rocketmq/init-topic.sh:/init-topic.sh:ro"]
+    entrypoint: ["sh", "/init-topic.sh"]
+    restart: "no"
+  risk-agent:
+    build: ./risk-agent
+    environment:
+      INTERNAL_API_KEY: ${INTERNAL_API_KEY:-local-risk-key-change-me}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      LLM_MODEL: ${LLM_MODEL:-gpt-4.1-mini}
+  ticket-risk-platform:
+    build: ./ticket-risk-platform
+    depends_on:
+      ticket-mysql: {condition: service_healthy}
+      ticket-redis: {condition: service_healthy}
+      ticket-rmq-init: {condition: service_completed_successfully}
+    environment:
+      DB_URL: jdbc:mysql://ticket-mysql:3306/ticketing?useSSL=false&serverTimezone=UTC&characterEncoding=utf8&allowPublicKeyRetrieval=true&useLocalSessionState=true&useLocalTransactionState=true&cacheServerConfiguration=true&enableQueryTimeouts=false&cachePrepStmts=true&prepStmtCacheSize=250&prepStmtCacheSqlLimit=2048&maintainTimeStats=false&connectTimeout=5000&socketTimeout=30000
+      DB_USER: ticketing
+      DB_PASSWORD: ${DB_PASSWORD:-ticketing-local}
+      REDIS_HOST: ticket-redis
+      MQ_NAMESERVER: ticket-rmqnamesrv:9876
+      RISK_AGENT_URL: http://risk-agent:8090
+      INTERNAL_API_KEY: ${INTERNAL_API_KEY:-local-risk-key-change-me}
+      DEMO_LOGIN_ENABLED: "true"
+      TICKET_SALE_ARMORY_ENABLED: ${TICKET_SALE_ARMORY_ENABLED:-false}
+      TICKETING_INVENTORY_BUCKET_COUNT: ${TICKETING_INVENTORY_BUCKET_COUNT:-1}
+      JAVA_TOOL_OPTIONS: "-Xms256m -Xmx512m"
+    ports: ["127.0.0.1:8082:8082"]
+    mem_limit: 768m
+  ticket-risk-web:
+    build: ./ticket-risk-web
+    depends_on: [ticket-risk-platform]
+    ports: ["127.0.0.1:8080:80"]
+    networks:
+      default:
+        ipv4_address: 172.30.0.10
+  prometheus:
+    image: prom/prometheus:v2.53.0
+    volumes: ["./docker/prometheus.yml:/etc/prometheus/prometheus.yml:ro"]
+    ports: ["127.0.0.1:9090:9090"]
+  grafana:
+    image: grafana/grafana:11.2.0
+    depends_on: [prometheus]
+    environment:
+      GF_AUTH_ANONYMOUS_ENABLED: "false"
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-local-grafana-change-me}
+    volumes:
+      - ticket_grafana_data:/var/lib/grafana
+      - ./docker/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./docker/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    ports: ["127.0.0.1:3000:3000"]
+    profiles: [observability]
+volumes:
+  ticket_grafana_data:
+  ticket_mysql_data:
+  ticket_redis_data:
+  ticket_mq_data:
+networks:
+  default:
+    ipam:
+      config:
+        - subnet: 172.30.0.0/24

@@ -1,0 +1,13 @@
+global:
+  scrape_interval: 15s
+scrape_configs:
+  - job_name: credit-risk-java
+    scrape_interval: 5s
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: ['host.docker.internal:18082']
+        labels:
+          environment: credit-risk-dev
+  - job_name: credit-risk-prometheus
+    static_configs:
+      - targets: ['localhost:9090']

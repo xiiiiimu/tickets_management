@@ -1,0 +1,6 @@
+/.env
+/data/
+/runtime/
+/backup/
+/verification/*.log
+/verification/java-probe.ps1

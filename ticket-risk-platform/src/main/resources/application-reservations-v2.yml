@@ -1,0 +1,97 @@
+# Activate manually only after V105–V109 are applied and all serving nodes support V2.
+ticketing:
+  ingress:
+    workers: 4
+    capacity: 256
+    state-capacity: 4096
+    per-user-inflight: 4
+    post-rate: 1000
+    query-rate: 200
+    wait-ms: 120000
+    retention-ms: 60000
+  sale:
+    armory:
+      enabled: true
+  inventory:
+    bucket-count: 16
+    vector-reservations: false
+  risk:
+    summary:
+      enabled: true
+  reservations-v2:
+    enabled: true
+    attempts:
+      # Phase B infrastructure only; enable explicitly in isolated tests after V110 + mode activation.
+      # Qualification order, REVIEW cache and cross-bucket protocol remain later stages.
+      enabled: false
+      initial-service-ms: 2000
+      # Stage C, explicitly activate persisted mode only after draining unordered attempts.
+      ordered-lua: false
+      # Stage D, only after V112, drain and explicit persisted mode activation.
+      quick-review: false
+      review-cache-ms: 60000
+      review-window-ms: 2000
+      review-max-attempts: 3
+      # ---- Throughput switches (all OFF by default; each is independent and can be toggled for A/B) ----
+      # Local worker slots. The GLOBAL bound stays tb_reservation_dispatch.active_limit, which must equal
+      # ticketing.reservations-v2.workers on every node. Keep ticketing.pools.sale.max >= workers.
+      # workers: 4
+      # Advisory Redis gate: 429 before any MySQL work; MySQL register remains the only authority.
+      # redis-gate: false
+      # redis-gate-marker-ms: 600000      # admitted requestId stays "known" so retries reach MySQL
+      # redis-gate-reconcile-ms: 200      # overwrite the COMMITTED waiting count from MySQL; never touches held admissions
+      # redis-gate-hold-ms: 10000         # an admission whose outcome stays unknown is counted until this expires;
+      #                                   # must exceed batch-register-wait-ms + batch-register-taken-wait-ms + 1s
+      # One coordinator lock + one commit per batch of registrations.
+      # batch-register: false
+      # batch-register-size: 16
+      # batch-register-linger-ms: 5
+      # batch-register-wait-ms: 1000      # still QUEUED after this: cancelled, never written, definite 429
+      # batch-register-taken-wait-ms: 4000 # already TAKEN into a transaction: wait this much longer for its outcome,
+      #                                   # then 503 VALIDATION_UNAVAILABLE (outcome unknown, query by requestId)
+      # batch-register-queue: 1024        # full buffer -> 429 before any database work
+      # batch-register-backlog-guard: false  # true: 429 up front when queued batches cannot commit within the wait
+      # One claim transaction grants several attempts. With the SQL-cursor lane it causes defer/re-claim churn on a
+      # hot SKU (measured); with redis-ordered-lane there is no turn waiting. See ATTEMPT-THROUGHPUT-CHANGES.md
+      # batch-claim: false
+      # Redis-arrival SKU lane (mode of ordered-lua): the order in which the reserve Lua reaches Redis defines the
+      # order; no per-SKU MySQL cursor/row lock. Needs V114 and tb_reservation_dispatch.redis_lane_enabled=1 on
+      # every node (stop all nodes, drain published-but-unfinished SQL-cursor turns, then switch).
+      # redis-ordered-lane: false
+      # DB_BUSY rule: unset = original (refuse if any thread waits for a connection or the pool is full);
+      # N = refuse only when more than N threads wait.
+      # db-busy:
+      #   max-waiting: 8
+    accepting: true
+    legacy-reserve-accepting: false
+  # ---- V3 (protocol 4): Redis Lua acceptance + Redis Stream consumer group. OFF by default. ----
+  # Whole-system switch (never mixed with protocol 3):
+  #   1. accepting=false on protocol 3, wait until no protocol-3 WAITING/PROCESSING rows and no REQUESTED intents remain
+  #   2. UPDATE tb_reservation_dispatch SET runtime_protocol=4 WHERE id=1   (redis_lane_enabled=1, ordered_lua_enabled=1)
+  #   3. restart every node with reservations-v3.enabled=true, attempts.enabled=true, ordered-lua=true,
+  #      redis-ordered-lane=true and batch-register / redis-gate / batch-claim OFF (startup refuses otherwise)
+  # Rollback: HSET {tkv3}:cfg mode CLOSED; wait until XLEN {tkv3}:stream = 0 and no protocol-4 PROCESSING rows;
+  #   runtime_protocol=3; restart with reservations-v3.enabled=false. Protocol-4 orders stay payable/issuable.
+  # HTTP 202 under V3 = accepted for processing (state PROCESSING, durable=false); success/failure only from MySQL.
+  # reservations-v3:
+  #   enabled: false
+  #   workers: 4                 # local consumer slots (defaults to reservations-v2.attempts.workers); pools.sale.max >= workers
+  #   retention-ms: 1800000      # Redis request record / owner marker TTL
+  #   claim-idle-ms: 15000       # idle time before another consumer claims a message (>= the 15s lease)
+  #   orphan-ms: 60000           # protocol-4 PROCESSING row with a lease expired this long and no message: re-driven
+  #   capacity-fresh-ms: 3000    # older published capacity -> conservative fallback (one round of active slots)
+  #   auto-open: true            # first activation sets {tkv3}:cfg mode OPEN; an explicit operator mode is kept
+    queue-capacity: 512
+    workers: 4
+    pass-weight: 2
+    review-age-ms: 2000
+    queue-timeout-ms: 30000
+    poll-ms: 25
+    mock-payment:
+      enabled: false
+  payment:
+    gateway:
+      enabled: false
+  pools:
+    sale: {core: 4, max: 4, queue: 0}
+    gateway: {core: 2, max: 2, queue: 8}
